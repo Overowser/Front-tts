@@ -16,6 +16,9 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const timerRef = useRef();
+  const [shouldSpeak, setShouldSpeak] = useState(false);
+
+  const tts = window.wsGlobals.TtsEngine;
 
   const buttonStyle = {
     ...(isSuccess ? {
@@ -31,7 +34,28 @@ const App = () => {
     }: {color:'white'}),
   };
 
+console.log("kherya: ", tts.getVoiceURI()); // ***********************************
+
+
   useEffect(() => {
+    if (window.wsGlobals) {
+      const tts = window.wsGlobals.TtsEngine;
+
+      // Initialize the TTS Engine
+      tts.init({
+          onInit: (voices) => {
+              console.log("TTS initialized with voices:", voices);
+          },
+          onStart: () => {
+              console.log("Speech started");
+          },
+          onDone: () => {
+              console.log("Speech completed");
+          },
+      });
+  } else {
+      console.error("wsGlobals is not defined.");
+  }
     return () => clearTimeout(timerRef.current);
   }, []);
 
@@ -52,10 +76,16 @@ const App = () => {
         .then(response => response.json())
         .then(result => {
           setUrl(result.url);
+          // const data = "<p>" + result.text.split('\n').map(line => line.trim()).join('</p><p>') + '</p>';
+          // setNovelText(data);
           setNovelText(result.text);
           saveTextToFile(result.text);
           setIsSuccess(true);
           setIsLoading(false);
+          tts.setRate(20);
+          tts.setVoiceByUri("urn:moz-tts:sapi:Microsoft Zira Desktop - English (United States)?en-US");
+          tts.speakOut(result.text);
+          setShouldSpeak(true);
         });
     }
   };
@@ -87,38 +117,6 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
-  // useEffect(() => {
-  //   const script = document.createElement('script');
-  //   script.src = 'https://unpkg.com/ttsreader-plugin/main.js';
-  //   script.defer = true;
-
-  //   // Run when the script has loaded successfully
-  //   script.onload = () => {
-  //     console.log('TTSReader Plugin script loaded.');
-
-  //     // Initialize the plugin (if it provides an API for initialization)
-  //     if (window.TTSReaderPlugin) {
-  //       window.TTSReaderPlugin.init({
-  //         elementId: 'tts-reader-container',
-  //         format: "large" // The container where the plugin will render
-  //       });
-  //     }
-  //   };
-
-  //   // Error handling
-  //   script.onerror = () => {
-  //     console.error('Failed to load the TTSReader Plugin script.');
-  //   };
-
-  //   // Append the script to the document
-  //   document.body.appendChild(script);
-
-  //   // Clean up the script when the component unmounts
-  //   return () => {
-  //     document.body.removeChild(script);
-  //   };
-  // }, []); // Empty dependency array ensures this runs only once when the component mounts
-
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -149,7 +147,7 @@ const App = () => {
             label="Chapter"
             type="number"
             variant="outlined"
-            style={{ width: '5%', margin: '5px' }}
+            style={{ width: '7%', margin: '5px' }}
             inputProps={{ style: { color: '#94999D' } }}
             value={chapter}
             onChange={e => setChapter(e.target.value)}
@@ -158,7 +156,7 @@ const App = () => {
             label="Number"
             type="number"
             variant="outlined"
-            style={{ width: '5%', margin: '5px' }}
+            style={{ width: '7%', margin: '5px' }}
             inputProps={{ style: { color: '#94999D' } }}
             value={number}
             onChange={e => setNumber(e.target.value)}
@@ -210,6 +208,7 @@ const App = () => {
               )}
             </Box>
           </Box>
+          <Button onClick={() => {setShouldSpeak(!shouldSpeak); !shouldSpeak ? tts.speakOut(novelText) : tts.stop();}} color ="inherit">{shouldSpeak ? "Stop" : "Resume"}</Button>
           <br />
           <br />
           <TextField
