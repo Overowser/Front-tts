@@ -11,14 +11,29 @@ const App = () => {
   const [chapter, setChapter] = useState(1);
   const [number, setNumber] = useState(1);
   const [url, setUrl] = useState('');
-  const [novelText, setNovelText] = useState('');
+  const [novelText, setNovelText] = useState('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n');
   const [isCopied, setIsCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const timerRef = useRef();
   const [shouldSpeak, setShouldSpeak] = useState(false);
+  const [title, setTitle] = useState('Novel Title');
+  const [image, setImage] = useState('./logo192.png');
 
   const tts = window.wsGlobals.TtsEngine;
+
+
+  const backgroundStyle = {
+    backgroundImage: "url('background.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "fixed",
+    height: "100%",
+    width: "100%",
+    backgroundRepeat: "no-repeat",
+  };
+
+
 
   const buttonStyle = {
     ...(isSuccess ? {
@@ -33,9 +48,6 @@ const App = () => {
       '&:hover': { bgcolor: green[700] },
     }: {color:'white'}),
   };
-
-console.log("kherya: ", tts.getVoiceURI()); // ***********************************
-
 
   useEffect(() => {
     if (window.wsGlobals) {
@@ -76,16 +88,18 @@ console.log("kherya: ", tts.getVoiceURI()); // *********************************
         .then(response => response.json())
         .then(result => {
           setUrl(result.url);
-          // const data = "<p>" + result.text.split('\n').map(line => line.trim()).join('</p><p>') + '</p>';
-          // setNovelText(data);
-          setNovelText(result.text);
+          const data = "<p>" + result.text.split('\n').map(line => line.trim()).join('</p><p>') + '</p>';
+          setNovelText(data);
+          // setNovelText(result.text);
           saveTextToFile(result.text);
+          setTitle(result.title);
+          setImage(result.image);
           setIsSuccess(true);
           setIsLoading(false);
           tts.setRate(20);
           tts.setVoiceByUri("urn:moz-tts:sapi:Microsoft Zira Desktop - English (United States)?en-US");
-          tts.speakOut(result.text);
-          setShouldSpeak(true);
+          // tts.speakOut(result.text);
+          // setShouldSpeak(true);
         });
     }
   };
@@ -121,7 +135,7 @@ console.log("kherya: ", tts.getVoiceURI()); // *********************************
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <Box
+      <Box style={backgroundStyle}
         sx={{
           width: '100%',
           display: 'flex',
@@ -130,15 +144,21 @@ console.log("kherya: ", tts.getVoiceURI()); // *********************************
           height: '100%', // Make it full screen
           textAlign: 'center', // Optional, for text alignment
         }}
-      > 
-        <div style={{ width: '100%', alignItems: 'center' }}>
-        <img src="try.png" alt="Logo" style={{ width: '100%', height: '300px' }} />
-        <br />
-        <br />
+      >        
+        <div style={{ width: '100%', alignItems: 'center' }}>  
+        <div class="container">
+          <div class="image">
+            <img src={image} alt="placeholder" />
+          </div>
+          <div class="text">
+            <h1>{title}</h1>
+          </div>
+        </div>      
+
           <TextField
             label="Keyword"
             variant="outlined"
-            style={{ width: '40%', margin: '5px' }}
+            style={{ width: '40%', margin: '5px', backgroundColor:'rgba(31,31,31,0.95)'}}
             inputProps={{ style: { color: '#94999D' } }}
             value={keyword}
             onChange={e => setKeyword(e.target.value)}
@@ -147,7 +167,7 @@ console.log("kherya: ", tts.getVoiceURI()); // *********************************
             label="Chapter"
             type="number"
             variant="outlined"
-            style={{ width: '7%', margin: '5px' }}
+            style={{ width: '7%', margin: '5px', backgroundColor:'rgba(31,31,31,0.95)'}}
             inputProps={{ style: { color: '#94999D' } }}
             value={chapter}
             onChange={e => setChapter(e.target.value)}
@@ -156,7 +176,7 @@ console.log("kherya: ", tts.getVoiceURI()); // *********************************
             label="Number"
             type="number"
             variant="outlined"
-            style={{ width: '7%', margin: '5px' }}
+            style={{ width: '7%', margin: '5px', backgroundColor:'rgba(31,31,31,0.95)' }}
             inputProps={{ style: { color: '#94999D' } }}
             value={number}
             onChange={e => setNumber(e.target.value)}
@@ -166,6 +186,7 @@ console.log("kherya: ", tts.getVoiceURI()); // *********************************
               <Fab
                 aria-label="save"
                 color='primary'
+                style={{backgroundColor:'rgba(31,31,31,0.95)' }}
                 sx={fabStyle}
                 onClick={() => handleFetch(keyword, chapter, number)}
               >
@@ -189,6 +210,7 @@ console.log("kherya: ", tts.getVoiceURI()); // *********************************
                 variant="contained"
                 sx={buttonStyle}
                 disabled={isLoading}
+                style={{backgroundColor:'rgba(31,31,31,0.95)' }}
                 onClick={() => handleFetch(keyword, chapter, number)}
               >
                 Send
@@ -208,11 +230,11 @@ console.log("kherya: ", tts.getVoiceURI()); // *********************************
               )}
             </Box>
           </Box>
-          <Button onClick={() => {setShouldSpeak(!shouldSpeak); !shouldSpeak ? tts.speakOut(novelText) : tts.stop();}} color ="inherit">{shouldSpeak ? "Stop" : "Resume"}</Button>
+          <Button style={{backgroundColor:'rgba(31,31,31,0.95)' }} onClick={() => {setShouldSpeak(!shouldSpeak); !shouldSpeak ? tts.speakOut(novelText) : tts.stop();}} color ="inherit">{!shouldSpeak ? "Play" : "Stop"}</Button>
           <br />
           <br />
           <TextField
-            style={{ width: '50%' }}
+            style={{ width: '50%', backgroundColor:'rgba(31,31,31,0.95)' }}
             label="Url"
             variant="outlined"
             inputProps={{ style: { color: '#94999D' } }}
@@ -220,14 +242,32 @@ console.log("kherya: ", tts.getVoiceURI()); // *********************************
           />
           <br />
           <br />
-          <TextField
+          {/* <TextField
             multiline
-            style={{ width: '80%' }}
+            style={{ width: '80%', backgroundColor:'rgba(31,31,31,0.95)' }}
             label="Novel"
             inputProps={{ style: { color: '#94999D' } }}
             variant="outlined"
             value={novelText}
-          />
+          /> */}
+          <div style={{ width: '100%', justifyContent: 'center' }}>
+          <div
+            style={{
+              width: '80%',
+              backgroundColor: 'rgba(31,31,31,0.95)',
+              padding: '1rem',
+              borderRadius: '4px',
+              color: '#94999D',
+              margin: '0 auto'
+            }}
+          >
+            <label style={{ display: 'block', marginBottom: '8px', color: '#94999D', textAlign: 'center' }}>Novel</label>
+            <div
+              style={{ whiteSpace: 'pre-wrap', textAlign: 'left', }}
+              dangerouslySetInnerHTML={{ __html: novelText }}
+            />
+          </div>
+          </div>
           <Tooltip title="Copy to clipboard">
             <Button onClick={handleCopyToClipboard} sx={{ minWidth: '30px' }}>
               <ContentCopyIcon sx={{ height: '20px', color: '#216C17' }} />
