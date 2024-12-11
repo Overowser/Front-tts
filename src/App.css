@@ -40,6 +40,10 @@
    max-height:30%;
  }
 
+ .highlight {
+  background-color: rgb(27, 109, 113);
+}
+
 
 @keyframes App-logo-spin {
   from {

@@ -11,14 +11,18 @@ const App = () => {
   const [chapter, setChapter] = useState(1);
   const [number, setNumber] = useState(1);
   const [url, setUrl] = useState('');
-  const [novelText, setNovelText] = useState('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n');
+  const [novelText, setNovelText] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const timerRef = useRef();
   const [shouldSpeak, setShouldSpeak] = useState(false);
+  const shouldSpeakRef = useRef(false);
   const [title, setTitle] = useState('Novel Title');
   const [image, setImage] = useState('./logo192.png');
+  const [formattedText, setFormattedText] = useState('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n');
+  const [textArray, setTextArray] = useState([]);
+  const [currentId, setCurrentId] = useState(0);
 
   const tts = window.wsGlobals.TtsEngine;
 
@@ -63,12 +67,14 @@ const App = () => {
           },
           onDone: () => {
               console.log("Speech completed");
+              onEnd();
           },
       });
   } else {
       console.error("wsGlobals is not defined.");
   }
     return () => clearTimeout(timerRef.current);
+    // 
   }, []);
 
   const handleFetch = (keyword, chapter, number) => {
@@ -88,9 +94,9 @@ const App = () => {
         .then(response => response.json())
         .then(result => {
           setUrl(result.url);
-          const data = "<p>" + result.text.split('\n').map(line => line.trim()).join('</p><p>') + '</p>';
-          setNovelText(data);
-          // setNovelText(result.text);
+          setNovelText(result.formatted);
+          setFormattedText(result.formatted);
+          setTextArray(result.array);
           saveTextToFile(result.text);
           setTitle(result.title);
           setImage(result.image);
@@ -131,6 +137,45 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
+  const onEnd = () => {
+    console.log('starts onEnd(), currentId = ', currentId);
+    setCurrentId((newId)=> newId+1);
+    console.log("currentId =", currentId);
+    speakParagraph(); // Recursive call with the new ID
+    console.log("ends onEnd(), currentId = ", currentId);
+  };
+
+  const speakParagraph = () => {
+    console.log('starts speakParagraph(), currentId = ', currentId);
+    console.log("textArray length:", textArray.length);
+    console.log("textArray :", textArray);
+    if (currentId >= textArray.length) {
+      shouldSpeakRef.current = false;
+      setCurrentId(0);
+      return;
+    }
+    console.log("skipped the if statement");
+    setFormattedText(novelText.replace(new RegExp(`id="par${currentId}"`, 'g'), `id="id${currentId}" class="highlight"`));
+  
+    tts.speakOut(textArray[currentId]);
+    console.log('ends speakParagraph(), currentId = ', currentId);
+  };
+
+  const handleStopResume = () => {
+    console.log("starts handleStopResume(), currentId = ", currentId);
+    if (shouldSpeakRef.current) {
+      // setFormattedText(novelText);
+      tts.stop();
+      shouldSpeakRef.current = false;
+    } else {
+      shouldSpeakRef.current = true;
+      speakParagraph();
+    }
+    console.log("ends handleStopResume(), currentId = ", currentId);
+  };
+  // useEffect(() => {
+  //   console.log("Updated currentId:", currentId); // Logs updated currentId when it changes
+  // }, [currentId]);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -146,11 +191,11 @@ const App = () => {
         }}
       >        
         <div style={{ width: '100%', alignItems: 'center' }}>  
-        <div class="container">
-          <div class="image">
+        <div className="container">
+          <div className="image">
             <img src={image} alt="placeholder" />
           </div>
-          <div class="text">
+          <div className="text">
             <h1>{title}</h1>
           </div>
         </div>      
@@ -230,7 +275,8 @@ const App = () => {
               )}
             </Box>
           </Box>
-          <Button style={{backgroundColor:'rgba(31,31,31,0.95)' }} onClick={() => {setShouldSpeak(!shouldSpeak); !shouldSpeak ? tts.speakOut(novelText) : tts.stop();}} color ="inherit">{!shouldSpeak ? "Play" : "Stop"}</Button>
+          {/* <Button style={{backgroundColor:'rgba(31,31,31,0.95)' }} onClick={() => {setShouldSpeak(!shouldSpeak); !shouldSpeak ? tts.speakOut(novelText) : tts.stop();}} color ="inherit">{!shouldSpeak ? "Play" : "Stop"}</Button> */}
+          <Button style={{backgroundColor:'rgba(31,31,31,0.95)' }} onClick={handleStopResume}>{!shouldSpeakRef.current ? "Play" : "Stop"}</Button>
           <br />
           <br />
           <TextField
@@ -242,14 +288,6 @@ const App = () => {
           />
           <br />
           <br />
-          {/* <TextField
-            multiline
-            style={{ width: '80%', backgroundColor:'rgba(31,31,31,0.95)' }}
-            label="Novel"
-            inputProps={{ style: { color: '#94999D' } }}
-            variant="outlined"
-            value={novelText}
-          /> */}
           <div style={{ width: '100%', justifyContent: 'center' }}>
           <div
             style={{
@@ -264,7 +302,7 @@ const App = () => {
             <label style={{ display: 'block', marginBottom: '8px', color: '#94999D', textAlign: 'center' }}>Novel</label>
             <div
               style={{ whiteSpace: 'pre-wrap', textAlign: 'left', }}
-              dangerouslySetInnerHTML={{ __html: novelText }}
+              dangerouslySetInnerHTML={{ __html: formattedText }}
             />
           </div>
           </div>
