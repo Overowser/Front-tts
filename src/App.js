@@ -23,6 +23,7 @@ const App = () => {
   const [formattedText, setFormattedText] = useState('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n');
   const [textArray, setTextArray] = useState([]);
   const [currentId, setCurrentId] = useState(0);
+  const currentIdRef = useRef(0);
 
   const tts = window.wsGlobals.TtsEngine;
 
@@ -57,9 +58,11 @@ const App = () => {
     if (window.wsGlobals) {
       const tts = window.wsGlobals.TtsEngine;
 
-      // Initialize the TTS Engine
+      
       tts.init({
           onInit: (voices) => {
+              tts.setRate(20);
+              tts.setVoiceByUri("urn:moz-tts:sapi:Microsoft Zira Desktop - English (United States)?en-US");
               console.log("TTS initialized with voices:", voices);
           },
           onStart: () => {
@@ -67,7 +70,10 @@ const App = () => {
           },
           onDone: () => {
               console.log("Speech completed");
-              onEnd();
+              console.log("onDone ; currentIdRef = ", currentIdRef.current);
+              currentIdRef.current = currentIdRef.current + 1;
+              console.log("onDone ; currentIdRef = ", currentIdRef.current);
+              speakParagraph(textArray);
           },
       });
   } else {
@@ -75,7 +81,7 @@ const App = () => {
   }
     return () => clearTimeout(timerRef.current);
     // 
-  }, []);
+  }, [textArray]);
 
   const handleFetch = (keyword, chapter, number) => {
     if (!isLoading) {
@@ -102,8 +108,6 @@ const App = () => {
           setImage(result.image);
           setIsSuccess(true);
           setIsLoading(false);
-          tts.setRate(20);
-          tts.setVoiceByUri("urn:moz-tts:sapi:Microsoft Zira Desktop - English (United States)?en-US");
           // tts.speakOut(result.text);
           // setShouldSpeak(true);
         });
@@ -137,45 +141,26 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
-  const onEnd = () => {
-    console.log('starts onEnd(), currentId = ', currentId);
-    setCurrentId((newId)=> newId+1);
-    console.log("currentId =", currentId);
-    speakParagraph(); // Recursive call with the new ID
-    console.log("ends onEnd(), currentId = ", currentId);
-  };
-
-  const speakParagraph = () => {
-    console.log('starts speakParagraph(), currentId = ', currentId);
-    console.log("textArray length:", textArray.length);
-    console.log("textArray :", textArray);
-    if (currentId >= textArray.length) {
+  const speakParagraph = (text) => {
+    if (currentIdRef.current >= text.length) {
       shouldSpeakRef.current = false;
-      setCurrentId(0);
+      currentIdRef.current = 0;
       return;
     }
-    console.log("skipped the if statement");
-    setFormattedText(novelText.replace(new RegExp(`id="par${currentId}"`, 'g'), `id="id${currentId}" class="highlight"`));
+    setFormattedText(novelText.replace(new RegExp(`id="par${currentIdRef.current}"`, 'g'), `id="par${currentIdRef.current}" class="highlight"`));
   
-    tts.speakOut(textArray[currentId]);
-    console.log('ends speakParagraph(), currentId = ', currentId);
+    tts.speakOut(text[currentIdRef.current]);
   };
 
   const handleStopResume = () => {
-    console.log("starts handleStopResume(), currentId = ", currentId);
     if (shouldSpeakRef.current) {
-      // setFormattedText(novelText);
       tts.stop();
       shouldSpeakRef.current = false;
     } else {
       shouldSpeakRef.current = true;
-      speakParagraph();
+      speakParagraph(textArray);
     }
-    console.log("ends handleStopResume(), currentId = ", currentId);
   };
-  // useEffect(() => {
-  //   console.log("Updated currentId:", currentId); // Logs updated currentId when it changes
-  // }, [currentId]);
 
   return (
     <ThemeProvider theme={darkTheme}>
