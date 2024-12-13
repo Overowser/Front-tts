@@ -44,6 +44,10 @@
   background-color: rgb(27, 109, 113);
 }
 
+  .titlebg {
+  background-color: rgba(31,31,31,0.8) ;
+}
+
 
 @keyframes App-logo-spin {
   from {

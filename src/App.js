@@ -2,7 +2,7 @@ import './App.css';
 import { useState, useEffect, useRef } from 'react';
 import { TextField, Button, Tooltip, CssBaseline, Fab, CircularProgress } from '@mui/material';
 import { Send as SendIcon, ContentCopy as ContentCopyIcon, Check as CheckIcon, Save as SaveIcon } from '@mui/icons-material';
-import { Box } from '@mui/system';
+import { Box, fontSize } from '@mui/system';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { green } from '@mui/material/colors';
 
@@ -10,7 +10,6 @@ const App = () => {
   const [keyword, setKeyword] = useState('infinite mana in the apocalypse');
   const [chapter, setChapter] = useState(1);
   const [number, setNumber] = useState(1);
-  const [url, setUrl] = useState('');
   const [novelText, setNovelText] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +21,6 @@ const App = () => {
   const [image, setImage] = useState('./logo192.png');
   const [formattedText, setFormattedText] = useState('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n');
   const [textArray, setTextArray] = useState([]);
-  const [currentId, setCurrentId] = useState(0);
   const currentIdRef = useRef(0);
 
   const tts = window.wsGlobals.TtsEngine;
@@ -58,22 +56,20 @@ const App = () => {
     if (window.wsGlobals) {
       const tts = window.wsGlobals.TtsEngine;
 
-      
+
       tts.init({
           onInit: (voices) => {
               tts.setRate(20);
               tts.setVoiceByUri("urn:moz-tts:sapi:Microsoft Zira Desktop - English (United States)?en-US");
-              console.log("TTS initialized with voices:", voices);
           },
           onStart: () => {
               console.log("Speech started");
           },
           onDone: () => {
               console.log("Speech completed");
-              console.log("onDone ; currentIdRef = ", currentIdRef.current);
-              currentIdRef.current = currentIdRef.current + 1;
-              console.log("onDone ; currentIdRef = ", currentIdRef.current);
-              speakParagraph(textArray);
+              if (shouldSpeakRef.current) {
+                speakParagraph(textArray);
+              }
           },
       });
   } else {
@@ -88,7 +84,7 @@ const App = () => {
       setIsSuccess(false);
       setIsLoading(true);
 
-      fetch('http://127.0.0.1:5000/kherya/', {
+      fetch('http://127.0.0.1:5000/api/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +95,6 @@ const App = () => {
       })
         .then(response => response.json())
         .then(result => {
-          setUrl(result.url);
           setNovelText(result.formatted);
           setFormattedText(result.formatted);
           setTextArray(result.array);
@@ -108,8 +103,6 @@ const App = () => {
           setImage(result.image);
           setIsSuccess(true);
           setIsLoading(false);
-          // tts.speakOut(result.text);
-          // setShouldSpeak(true);
         });
     }
   };
@@ -150,16 +143,33 @@ const App = () => {
     setFormattedText(novelText.replace(new RegExp(`id="par${currentIdRef.current}"`, 'g'), `id="par${currentIdRef.current}" class="highlight"`));
   
     tts.speakOut(text[currentIdRef.current]);
+    if (shouldSpeakRef.current) {
+      currentIdRef.current = currentIdRef.current + 1;
+    }
   };
 
-  const handleStopResume = () => {
-    if (shouldSpeakRef.current) {
-      tts.stop();
-      shouldSpeakRef.current = false;
-    } else {
-      shouldSpeakRef.current = true;
-      speakParagraph(textArray);
-    }
+  const handleStart = () => {
+    if (!shouldSpeakRef.current) {
+    shouldSpeakRef.current = true;
+    speakParagraph(textArray);
+  }
+    return
+  };
+
+  const handlePause = () => {
+    shouldSpeakRef.current = false;
+    console.log("should speak should be false shouldSpeak:", shouldSpeakRef.current);
+    tts.stop();
+    currentIdRef.current = currentIdRef.current-1;
+    return
+  };
+
+  const handleStop = () => {
+    shouldSpeakRef.current = false;
+    tts.stop();
+    currentIdRef.current = 0;
+    setFormattedText(novelText);
+    return
   };
 
   return (
@@ -180,9 +190,7 @@ const App = () => {
           <div className="image">
             <img src={image} alt="placeholder" />
           </div>
-          <div className="text">
-            <h1>{title}</h1>
-          </div>
+            <h1 className='titlebg' style={{fontSize: '40px'}} >{title}</h1>
         </div>      
 
           <TextField
@@ -216,7 +224,7 @@ const App = () => {
               <Fab
                 aria-label="save"
                 color='primary'
-                style={{backgroundColor:'rgba(31,31,31,0.95)' }}
+                style={{backgroundColor:'rgba(31,31,31,0.95)', color:'inherit' }}
                 sx={fabStyle}
                 onClick={() => handleFetch(keyword, chapter, number)}
               >
@@ -240,7 +248,7 @@ const App = () => {
                 variant="contained"
                 sx={buttonStyle}
                 disabled={isLoading}
-                style={{backgroundColor:'rgba(31,31,31,0.95)' }}
+                style={{backgroundColor:'rgba(31,31,31,0.95)', color:'inherit' }}
                 onClick={() => handleFetch(keyword, chapter, number)}
               >
                 Send
@@ -255,22 +263,15 @@ const App = () => {
                     left: '50%',
                     marginTop: '-12px',
                     marginLeft: '-12px',
-                  }}
+                  }
+                }
                 />
               )}
             </Box>
           </Box>
-          {/* <Button style={{backgroundColor:'rgba(31,31,31,0.95)' }} onClick={() => {setShouldSpeak(!shouldSpeak); !shouldSpeak ? tts.speakOut(novelText) : tts.stop();}} color ="inherit">{!shouldSpeak ? "Play" : "Stop"}</Button> */}
-          <Button style={{backgroundColor:'rgba(31,31,31,0.95)' }} onClick={handleStopResume}>{!shouldSpeakRef.current ? "Play" : "Stop"}</Button>
-          <br />
-          <br />
-          <TextField
-            style={{ width: '50%', backgroundColor:'rgba(31,31,31,0.95)' }}
-            label="Url"
-            variant="outlined"
-            inputProps={{ style: { color: '#94999D' } }}
-            value={url}
-          />
+          <Button style={{backgroundColor:'rgba(31,31,31,0.95)', color:'inherit', marginRight: '5px' }} onClick={handleStart}>Start</Button>
+          <Button style={{backgroundColor:'rgba(31,31,31,0.95)', color:'inherit' }} onClick={handlePause}>Pause</Button>
+          <Button style={{backgroundColor:'rgba(31,31,31,0.95)', color:'inherit', marginLeft: '5px' }} onClick={handleStop}>Stop</Button>
           <br />
           <br />
           <div style={{ width: '100%', justifyContent: 'center' }}>
