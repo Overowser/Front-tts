@@ -22,6 +22,7 @@ const App = () => {
   const [formattedText, setFormattedText] = useState('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n');
   const [textArray, setTextArray] = useState([]);
   const currentIdRef = useRef(0);
+  const isPaused = useRef(true);
 
   const tts = window.wsGlobals.TtsEngine;
 
@@ -59,7 +60,7 @@ const App = () => {
 
       tts.init({
           onInit: (voices) => {
-              tts.setRate(20);
+              tts.setRate(1);
               tts.setVoiceByUri("urn:moz-tts:sapi:Microsoft Zira Desktop - English (United States)?en-US");
           },
           onStart: () => {
@@ -161,6 +162,15 @@ const App = () => {
     console.log("should speak should be false shouldSpeak:", shouldSpeakRef.current);
     tts.stop();
     currentIdRef.current = currentIdRef.current-1;
+    return
+  };
+
+  const handlePauseStart = () => {
+    if (!shouldSpeakRef.current) {
+      handleStart();
+    } else {
+      handlePause();
+    }
     return
   };
 
@@ -272,6 +282,7 @@ const App = () => {
           <Button style={{backgroundColor:'rgba(31,31,31,0.95)', color:'inherit', marginRight: '5px' }} onClick={handleStart}>Start</Button>
           <Button style={{backgroundColor:'rgba(31,31,31,0.95)', color:'inherit' }} onClick={handlePause}>Pause</Button>
           <Button style={{backgroundColor:'rgba(31,31,31,0.95)', color:'inherit', marginLeft: '5px' }} onClick={handleStop}>Stop</Button>
+          <Button style={{backgroundColor:'rgba(31,31,31,0.95)', color:'inherit', marginLeft: '5px' }} onClick={handlePauseStart}>{shouldSpeak ? 'Pause' : 'Start'}</Button>
           <br />
           <br />
           <div style={{ width: '100%', justifyContent: 'center' }}>
@@ -304,4 +315,5 @@ const App = () => {
 };
 
 export default App;
+
 
