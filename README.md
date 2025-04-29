@@ -1,70 +1,132 @@
-# Getting Started with Create React App
+# NovAI - Novel Reader Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<p align="center">
+  <img src="./public/logo193.png" alt="NovAI Logo" width="100" />
+</p>
+
+## Overview
+
+NovAI Frontend is a React-based web application that provides an interactive and immersive novel reading experience. This frontend interfaces with a separate backend API to fetch novel content and provides text-to-speech capabilities, allowing users to listen to novels with real-time paragraph highlighting.
+
+## Features
+
+- **Interactive UI**: Clean, responsive dark-themed interface built with Material UI
+- **Text-to-Speech**: Listen to novels with adjustable reading speed (0.5x to 2.5x)
+- **Visual Tracking**: Real-time paragraph highlighting while reading aloud
+- **Playback Controls**: Play, pause, and stop TTS functionality
+- **Content Management**: Copy text to clipboard or download as TXT files
+- **Responsive Design**: Optimized for various screen sizes
+
+## Technology Stack
+
+- **React**: Frontend library for building the user interface
+- **Material UI**: Component library for consistent design and theming
+- **React Hooks**: useState, useEffect, useRef, useCallback for state management
+- **Web Speech API**: Browser-native TTS capabilities
+- **Fetch API**: Communication with the backend service
+
+## Installation
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/Overowser/novai-frontend.git
+   cd my-app
+   ```
+
+2. Install dependencies:
+   ```
+   npm install
+   ```
+
+3. Start the development server:
+   ```
+   npm start
+   ```
+
+4. The application will be available at [http://localhost:3000](http://localhost:3000)
+
+## Backend Requirements
+
+This frontend application requires a backend API service that provides novel content. By default, it expects the backend to be running at `http://127.0.0.1:5000` with the following endpoint:
+
+- `POST /api/`: Accepts JSON payload with `keyword`, `chapter`, and `number` parameters
+
+For backend implementation details, please refer to the separate backend repository (https://github.com/Overowser/novai-backend) or the project portfolio page (https://overowser.github.io/projects/novai.html).
+
+## Usage
+
+1. Enter a novel keyword/name in the search field
+2. Specify the starting chapter and how many chapters to fetch
+3. Click the "Load" button to retrieve the content
+4. Use the playback controls to listen to the content:
+   - Play/Pause: Start or pause TTS reading
+   - Stop: Stop reading and reset to the beginning
+   - Speed slider: Adjust reading speed
+5. Use the action buttons to:
+   - Copy the content to clipboard
+   - Download the content as a text file
+
+## Screenshots
+
+![NovAI Main Interface](./public/screenshot.png)
+*Main interface with loaded novel content*
+
+## Key Components
+
+- **App.js**: Main application component with core functionality
+- **TTS Integration**: Text-to-speech implementation using browser native capabilities
+- **Material UI Theme**: Custom dark theme configuration for consistent styling
+- **Responsive Layout**: Grid-based layout that adapts to different screen sizes
+
+## Customization
+
+### Theming
+The application uses Material UI's theming system, which can be easily customized by modifying the `darkTheme` object:
+
+```javascript
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: blue[400],
+    },
+    // Add more customizations here
+  },
+  // ...
+});
+```
+
+### API Endpoint
+To connect to a different backend API, update the fetch URL in the `fetchNovel` function:
+
+```javascript
+const response = await fetch('http://your-api-endpoint/api/', {
+  // request configuration
+});
+```
 
 ## Available Scripts
 
-In the project directory, you can run:
+- `npm start`: Runs the app in development mode
+- `npm test`: Launches the test runner
+- `npm run build`: Builds the app for production
+- `npm run eject`: Ejects from Create React App configuration
 
-### `npm start`
+## Future Enhancements
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- User preference storage (reading speed, preferred voice)
+- Custom voice selection interface
+- Reading progress persistence
+- Theme customization options
+- Chapter navigation controls
+- Bookmarking functionality
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## License
 
-### `npm test`
+[MIT License](LICENSE)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Contact
 
-### `npm run build`
+For questions or feedback, please open an issue on GitHub or contact [ben-ghali@hotmail.com](mailto:ben-ghali@hotmail.com).
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+For more information about the complete NovAI project, including the backend implementation, please visit my portfolio at [overowser.github.io](https://overowser.github.io).
