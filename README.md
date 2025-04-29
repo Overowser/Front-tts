@@ -22,7 +22,7 @@ NovAI Frontend is a React-based web application that provides an interactive and
 - **React**: Frontend library for building the user interface
 - **Material UI**: Component library for consistent design and theming
 - **React Hooks**: useState, useEffect, useRef, useCallback for state management
-- **Web Speech API**: Browser-native TTS capabilities
+- **TTS Engine Integration**: Connects to browser's native speech synthesis capabilities
 - **Fetch API**: Communication with the backend service
 
 ## Installation
@@ -74,7 +74,7 @@ For backend implementation details, please refer to the separate backend reposit
 ## Key Components
 
 - **App.js**: Main application component with core functionality
-- **TTS Integration**: Text-to-speech implementation using browser native capabilities
+- **TTS Engine Integration**: Connects to browser's native speech synthesis capabilities
 - **Material UI Theme**: Custom dark theme configuration for consistent styling
 - **Responsive Layout**: Grid-based layout that adapts to different screen sizes
 
