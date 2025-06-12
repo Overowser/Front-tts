@@ -30,7 +30,6 @@ NovAI Frontend is a React-based web application that provides an interactive and
 1. Clone the repository:
    ```
    git clone https://github.com/Overowser/novai-frontend.git
-   cd my-app
    ```
 
 2. Install dependencies:
